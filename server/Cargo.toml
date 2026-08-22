@@ -13,3 +13,4 @@ sqlx = { version = "0.9.0", features = ["runtime-tokio", "sqlite", "macros"] }
 dotenvy = "0.15.7"
 argon2 = { version = "0.5.3", features = ["std"] }
 tower-sessions = "0.15.0"
+serde = { version = "1.0.229", features = ["derive"] }
