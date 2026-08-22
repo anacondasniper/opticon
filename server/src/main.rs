@@ -6,8 +6,11 @@ use axum::{
     Router,
 };
 use futures_util::{SinkExt, StreamExt};
+use tower_http::services::ServeDir;
 use tokio::net::TcpListener;
 use tokio::sync::broadcast;
+use axum_server::tls_rustls::RustlsConfig;
+use std::net::SocketAddr;
 
 #[derive(Clone)]
 struct AppState {
@@ -22,10 +25,19 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health))
         .route("/ws", get(ws_handler))
+        .fallback_service(ServeDir::new("../app"))
         .with_state(state);
-    let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Opticon listening on http://{}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+
+    let config = RustlsConfig::from_pem_file(
+        "10.0.0.41+2.pem", 
+        "10.0.0.41+2-key.pem",
+    ).await.unwrap();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    println!("Opticon listening on https://{}", addr);
+    axum_server::bind_rustls(addr, config)
+        .serve(app.into_make_service())
+        .await.unwrap();
 }
 
 async fn health() -> &'static str {

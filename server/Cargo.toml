@@ -7,3 +7,5 @@ edition = "2024"
 axum = { version = "0.8.9", features = ["ws"] }
 tokio = { version = "1.53.1", features = ["full"] }
 futures-util = "=0.3.31"
+tower-http = { version = "0.7.0", features = ["fs"] }
+axum-server = { version = "0.8.0", features = ["tls-rustls"] }
