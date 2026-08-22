@@ -1,0 +1,34 @@
+# --- Secrets / env ---
+.env
+*.env
+!*.env.example
+
+# --- Rust (server) ---
+server/target/
+**/*.rs.bk
+
+# --- ESP-IDF (firmware) ---
+firmware/build/
+firmware/sdkconfig
+firmware/sdkconfig.old
+firmware/managed_components/
+firmware/dependencies.lock
+
+# --- Node / JS (app, if tooling added) ---
+node_modules/
+dist/
+*.log
+
+# --- Recordings / local data (don't commit footage) ---
+recordings/
+*.h264
+*.mp4
+*.jpg
+!app/icons/*.png
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

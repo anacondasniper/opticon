@@ -1,0 +1,46 @@
+%% DIY Doorbell — system blueprint (data-flow view)
+%% Line styles:  ==> power   --> signaling/setup   <==> media   -.-> ring/notification
+flowchart TB
+    subgraph DOOR["Door Unit  (build 2 of these)"]
+        direction TB
+        IRLED["IR LED boards x2"] --> CAM["IR-CUT Camera<br/>OV5647, 5MP"]
+        CAM -->|"FFC ribbon / MIPI-CSI"| P4["ESP32-P4-NANO<br/>H.264 encode + WebRTC peer"]
+        BTN["Doorbell button<br/>(momentary)"] -->|"GPIO"| P4
+        SPK["Speaker"] --- P4
+        MIC["Onboard mic"] --- P4
+        POEM["PoE module"] ==>|"5V"| P4
+    end
+
+    subgraph LAN["Inside the apartment"]
+        direction TB
+        SWI["PoE switch"] --- RT["Router"]
+    end
+
+    subgraph SRV["Your server  (Rust / Axum)"]
+        direction TB
+        SIG["Signaling<br/>WebSocket"]
+        RING["POST /ring"]
+        WP["Web-push sender<br/>(VAPID)"]
+        LOGIN["Admin login"]
+        COT["coturn / TURN"]
+        PWAHOST["PWA static files"]
+    end
+
+    subgraph CLIENT["Your phone  (installed PWA)"]
+        direction TB
+        SVW["Service worker"] -.->|"shows notification"| VIEW["Live view + talk button"]
+    end
+
+    PS["Push service<br/>APNs / FCM (via Web Push)"]
+
+    SWI ==>|"PoE: power + data over Cat6, run under the door"| POEM
+    RT --- SWI
+    RT --- SIG
+    RT --- PS
+
+    P4 <-->|"SDP / ICE (setup)"| SIG
+    VIEW <-->|"SDP / ICE (setup)"| SIG
+    P4 <==>|"WebRTC video + audio<br/>(peer-to-peer, relayed by TURN if off-network)"| VIEW
+
+    BTN -.->|"press"| RING
+    RING -.-> WP -.-> PS -.-> SVW
