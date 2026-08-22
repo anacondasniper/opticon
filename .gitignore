@@ -6,6 +6,7 @@
 # --- Rust (server) ---
 server/target/
 **/*.rs.bk
+server/data/
 
 # --- ESP-IDF (firmware) ---
 firmware/build/

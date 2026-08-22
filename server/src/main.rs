@@ -7,20 +7,30 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt};
 use tower_http::services::ServeDir;
-use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
+use sqlx::sqlite::SqlitePool;
 
 #[derive(Clone)]
 struct AppState {
     tx: broadcast::Sender<String>,
+    db: SqlitePool,
 }
 
 #[tokio::main]
 async fn main() {
+    dotenvy::dotenv().ok();
     let (tx, _rx) = broadcast::channel::<String>(100);
-    let state = AppState { tx };
+    let db = SqlitePool::connect(
+        &std::env::var("DATABASE_URL").expect("DATABASE_URL not set"),
+    ).await.expect("failed to connect to database");
+    sqlx::migrate!("./migrations")
+        .run(&db)
+        .await
+        .expect("failed to run migrations!");
+
+    let state = AppState { tx, db };
 
     let app = Router::new()
         .route("/health", get(health))
