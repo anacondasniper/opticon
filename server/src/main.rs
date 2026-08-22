@@ -1,6 +1,8 @@
 use axum::{
     extract::ws::{Message, WebSocket, WebSocketUpgrade},
     extract::State,
+    extract::Request,
+    middleware::Next,
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
@@ -49,10 +51,14 @@ async fn main() {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store).with_secure(true);
 
+    let protected = Router::new()
+        .route("/ws", get(ws_handler))
+        .route_layer(axum::middleware::from_fn(require_login));
+
     let app = Router::new()
         .route("/health", get(health))
-        .route("/ws", get(ws_handler))
         .route("/login", post(login))
+        .merge(protected)
         .fallback_service(ServeDir::new("../app"))
         .layer(session_layer)
         .with_state(state);
@@ -104,6 +110,19 @@ async fn login(
         (StatusCode::OK, "ok").into_response()
     } else {
         (StatusCode::UNAUTHORIZED, "invalid credentials").into_response()
+    }
+}
+
+async fn require_login(
+    session: Session,
+    request: Request,
+    next: Next,
+) -> impl IntoResponse {
+    let user_id: Option<i64> = session.get("user_id").await.unwrap_or(None);
+
+    match user_id {
+        Some(_) => next.run(request).await,
+        None => (StatusCode::UNAUTHORIZED, "not logged in").into_response(),
     }
 }
 
