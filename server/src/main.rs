@@ -4,6 +4,7 @@ use axum::{
     extract::Request,
     middleware::Next,
     http::StatusCode,
+    http::HeaderMap,
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
@@ -14,7 +15,7 @@ use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 use tokio::sync::broadcast;
 use tower_http::services::ServeDir;
-use tower_sessions::{MemoryStore, Session, SessionManagerLayer, session_store};
+use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
 
@@ -29,6 +30,11 @@ struct AppState {
 struct LoginRequest {
     username: String,
     password: String,
+}
+
+#[derive(Deserialize)]
+struct EventRequest {
+    doorbell_id: String,
 }
 
 #[tokio::main]
@@ -58,6 +64,8 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health))
         .route("/login", post(login))
+        .route("/ring", post(ring))
+        .route("/motion", post(motion))
         .merge(protected)
         .fallback_service(ServeDir::new("../app"))
         .layer(session_layer)
@@ -124,6 +132,58 @@ async fn require_login(
         Some(_) => next.run(request).await,
         None => (StatusCode::UNAUTHORIZED, "not logged in").into_response(),
     }
+}
+
+async fn verify_doorbell(
+    db: &SqlitePool,
+    headers: &HeaderMap,
+    doorbell_id: &str,
+) -> bool {
+    let token = match headers.get("x-device-token").and_then(|v| v.to_str().ok()) {
+        Some(t) => t,
+        None => return false,
+    };
+
+    let row = sqlx::query_as::<_, (String,)>(
+        "SELECT token FROM doorbells WHERE id = ?",
+    )
+    .bind(doorbell_id)
+    .fetch_optional(db)
+    .await
+    .unwrap_or(None);
+
+    match row {
+        Some((stored,)) => stored == token,
+        None => false,
+    }
+}
+
+async fn ring(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<EventRequest>,
+) -> impl IntoResponse {
+    if !verify_doorbell(&state.db, &headers, &body.doorbell_id).await {
+        return (StatusCode::UNAUTHORIZED, "invalid device").into_response();
+    }
+    let event = format!(r#"{{"kind":"ring","doorbell_id":"{}"}}"#, body.doorbell_id);
+    let _ = state.tx.send(event);
+    println!("ring from {}", body.doorbell_id);
+    (StatusCode::OK, "ok").into_response()
+}
+
+async fn motion(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<EventRequest>,
+) -> impl IntoResponse {
+    if !verify_doorbell(&state.db, &headers, &body.doorbell_id).await {
+        return (StatusCode::UNAUTHORIZED, "invalid device").into_response();
+    }
+    let event = format!(r#"{{"kind":"motion","doorbell_id":"{}"}}"#, body.doorbell_id);
+    let _ = state.tx.send(event);
+    println!("motion from {}", body.doorbell_id);
+    (StatusCode::OK, "ok").into_response()
 }
 
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {

@@ -60,7 +60,12 @@ function setupSignaling() {
 	ws.onopen = () => { log(`connected as ${myId}`); announce(); };
 	ws.onmessage = async (e) => {
 		const msg = JSON.parse(e.data);
-		if (msg.from == myId) return;
+
+		if (msg.kind === "ring" || msg.kind === "motion") {
+			log(`${msg.kind} on ${msg.doorbell_id}`);
+			return;
+		}
+		if (msg.from === myId) return;
 
 		switch (msg.type) {
 			case "ready":

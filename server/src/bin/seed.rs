@@ -42,5 +42,25 @@ async fn main() {
             println!("use already exists, skipped: {username}");
         }
     }
-    println!("seeding done.")
+
+    let doorbell_token: String = {
+        use argon2::password_hash::rand_core::{RngCore, OsRng};
+        let mut bytes = [0u8; 32];
+        OsRng.fill_bytes(&mut bytes);
+        bytes.iter().map(|b| format!("{:02x}", b)).collect()
+    };
+
+    sqlx::query(
+        "INSERT OR IGNORE INTO doorbells (id, name, token) VALUES (?, ?, ?)",
+    )
+    .bind("front-1")
+    .bind("Front Door")
+    .bind(&doorbell_token)
+    .execute(&db)
+    .await
+    .expect("doorbell insert failed!");
+
+    println!("doorbell front-1 token: {doorbell_token}");
+
+    println!("seeding done.");
 }

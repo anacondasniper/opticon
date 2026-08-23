@@ -1,0 +1,1 @@
+ALTER TABLE doorbells ADD COLUMN token TEXT NOT NULL DEFAULT '';
