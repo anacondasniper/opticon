@@ -3,16 +3,26 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Opticon - webcam test</title>
-	<link rel="stylesheet" href="styles.css" />
+	<link rel="stylesheet" href="styles/style.css" />
 </head>
 <body>
-	<h1>Opticon Webcam Test</h1>
-	<div id="status">starting...</div>
-	<div class="videos">
-		<div><div class="label">you (local)</div><video id="local" autoplay playsinline muted></video></div>
-		<div><div class="label">other (remote)</div><video id="remote" autoplay playsinline muted></video></div>
+	<div id="login">
+		<h2>Opticon</h2>
+		<input id="username" placeholder="username" autocomplete="username" />
+		<input id="password" type="password" placeholder="password" autocomplete="current-password" />
+		<button id="loginBtn">Login</button>
+		<div id="loginError" style="color:#f66;"></div>
+	</div>
+	<div id="app" style="display:none;">
+		<h1>Opticon Webcam Test</h1>
+		<div id="status">starting...</div>
+		<div class="videos">
+			<div><div class="label">you (local)</div><video id="local" autoplay playsinline muted></video></div>
+			<div><div class="label">other (remote)</div><video id="remote" autoplay playsinline muted></video></div>
+		</div>
 	</div>
 
-	<script src="webrtc.js"></script>
+	<script src="scripts/webrtc.js"></script>
+	<script src="scripts/auth.js"></script>
 </body>
 </html>

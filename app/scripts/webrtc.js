@@ -106,5 +106,3 @@ async function main() {
 	log("camera ready \u2014 open this page in a second tab");
 	setupSignaling();
 }
-
-main().catch((err) => log("error: " + err.message));
