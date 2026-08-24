@@ -33,3 +33,7 @@ recordings/
 *.swp
 .DS_Store
 Thumbs.db
+
+# --- HTTPS ---
+*.pem
+*.key
