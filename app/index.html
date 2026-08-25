@@ -11,7 +11,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 </head>
 <body>
-	<div id="login">
+	<div id="login" style="display:none;">
 		<img id="iconLogo" src="icons/opticon-ico180-transparent.png" alt="Opticon" />
 		<h2>opticon</h2>
 		<form id="loginForm">
@@ -20,6 +20,30 @@
 			<button id="loginBtn">Login</button>
 			<div id="loginError"></div>
 		</form>
+	</div>
+	<div id="list" style ="display:block;">
+		<header class="list-header">
+			<h1>Doorbells</h1>
+		</header>
+
+		<div class="doorbell-cards">
+			<button class="doorbell-card">
+				<div class="doorbell-icon">🔔</div>
+				<div class="doorbell-info">
+					<div class="doorbell-name">Front Door</div>
+					<div class="doorbell-status">Online</div>
+				</div>
+				<div class="doorbell-chevron">›</div>
+			</button>
+			<button class="doorbell-card">
+				<div class="doorbell-icon">🔔</div>
+				<div class="doorbell-info">
+					<div class="doorbell-name">Back Door</div>
+					<div class="doorbell-status">Online</div>
+				</div>
+				<div class="doorbell-chevron">›</div>
+			</button>
+		</div>
 	</div>
 	<div id="app" style="display:none;">
 		<h1>Opticon Webcam Test</h1>

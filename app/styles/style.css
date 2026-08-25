@@ -24,10 +24,6 @@ body {
 	text-align: center;
 	margin: 0;
 	min-height: 100dvh;
-	display: flex;
-	align-items: center;
-	flex-direction: column;
-	justify-content: center;
 }
 
 h1 {
@@ -158,4 +154,69 @@ video {
   color: var(--accent-hi);
   border-color: var(--accent);
   cursor: default;
+}
+
+/* list */
+
+.list-header {
+	margin-bottom: 1.5rem;
+}
+.list-header h1 {
+	margin: 1.5rem auto 0;
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+.doorbell-card {
+	width: 100%;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	color: var(--text);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem;
+	border-radius: 12px;
+}
+
+.doorbell-info {
+	flex: 1;
+}
+
+.doorbell-icon {
+	font-size: 1.5rem;
+	width: 44px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--surface-2);
+	border-radius: 10px;
+	flex-shrink: 0;
+}
+
+.doorbell-name {
+	font-weight: 600;
+	font-size: 1.05rem;
+}
+.doorbell-status {
+	font-size: 0.85rem;
+	color: var(--accent);
+	margin-top: 0.15rem;
+}
+
+.doorbell-chevron {
+	font-size: 1.5rem;
+	color: var(--text-dim);
+	flex-shrink: 0;
+}
+
+.doorbell-card:hover { border-color: var(--accent); }
+.doorbell-card:active {
+	background: var(--surface-2);
+	transform: scale(0.99);
 }
