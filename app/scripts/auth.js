@@ -1,7 +1,7 @@
-const loginBtn = document.getElementById("loginBtn");
 const loginError = document.getElementById("loginError");
 
-loginBtn.onclick = async () => {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+	e.preventDefault();
 	const username = document.getElementById("username").value;
 	const password = document.getElementById("password").value;
 
@@ -22,4 +22,4 @@ loginBtn.onclick = async () => {
 	} catch (e) {
 		loginError.textContent = "Login failed: " + e.message;
 	}
-};
+});
