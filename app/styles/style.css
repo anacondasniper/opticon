@@ -16,7 +16,14 @@
 	--danger:	 #f66;
 }
 
-/* app */
+html, body {
+	height: 100%;
+	overflow: hidden;
+	overscroll-behavior: none;
+	position: fixed;
+	width: 100%;
+}
+
 body {
 	font-family: system-ui, sans-serif;
 	background: var(--bg);
@@ -26,6 +33,7 @@ body {
 	min-height: 100dvh;
 }
 
+/* app */
 .camera-view {
 	position: relative;
 	width: 100%;
@@ -242,6 +250,9 @@ body {
 	margin: 0 auto;
 	padding: 1.5rem 1rem;
 	padding-top: calc(1.5rem + env(safe-area-inset-top));
+	height: 100dvh;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .list-header {
