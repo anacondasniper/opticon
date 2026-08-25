@@ -202,6 +202,8 @@ async fn motion(
     let event = format!(r#"{{"kind":"motion","doorbell_id":"{}"}}"#, body.doorbell_id);
     let _ = state.tx.send(event);
     println!("motion from {}", body.doorbell_id);
+
+    send_push_to_all(&state.db, "Opticon", "Motion detected 👀").await;
     (StatusCode::OK, "ok").into_response()
 }
 
