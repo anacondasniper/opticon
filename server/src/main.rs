@@ -14,10 +14,10 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 use tokio::sync::broadcast;
-use tower_http::services::ServeDir;
 use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
+use tower_http::services::ServeDir;
 
 
 #[derive(Clone)]
@@ -35,6 +35,18 @@ struct LoginRequest {
 #[derive(Deserialize)]
 struct EventRequest {
     doorbell_id: String,
+}
+
+#[derive(Deserialize)]
+struct PushSubscription {
+    endpoint: String,
+    keys: PushKeys,
+}
+
+#[derive(Deserialize)]
+struct PushKeys {
+    p256dh: String,
+    auth: String,
 }
 
 #[tokio::main]
@@ -59,6 +71,7 @@ async fn main() {
 
     let protected = Router::new()
         .route("/ws", get(ws_handler))
+        .route("/subscribe", post(subscribe))
         .route_layer(axum::middleware::from_fn(require_login));
 
     let app = Router::new()
@@ -215,4 +228,34 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
         _ = &mut send_task => recv_task.abort(),
         _ = &mut recv_task => send_task.abort(),
     }
-} 
+}
+
+async fn subscribe(
+    session: Session,
+    State(state): State<AppState>,
+    Json(sub): Json<PushSubscription>,
+) -> impl IntoResponse {
+    let user_id: Option<i64> = session.get("user_id").await.unwrap_or(None);
+    let user_id = match user_id {
+        Some(id) => id,
+        None => return (StatusCode::UNAUTHORIZED, "not logged in").into_response(),
+    };
+
+    let result = sqlx::query(
+        "INSERT OR REPLACE INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)",
+    )
+    .bind(user_id)
+    .bind(&sub.endpoint)
+    .bind(&sub.keys.p256dh)
+    .bind(&sub.keys.auth)
+    .execute(&state.db)
+    .await;
+
+    match result {
+        Ok(_) => (StatusCode::OK, "subscribed").into_response(),
+        Err(e) => {
+            eprintln!("subscribe error: {e}");
+            (StatusCode::INTERNAL_SERVER_ERROR, "failed").into_response()
+        }
+    }
+}
