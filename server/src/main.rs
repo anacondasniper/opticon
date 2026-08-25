@@ -14,7 +14,7 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 use tokio::sync::broadcast;
-use tower_sessions::{MemoryStore, Session, SessionManagerLayer, cookie::time::Error::InvalidFormatDescription};
+use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
 use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
