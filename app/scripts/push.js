@@ -24,16 +24,18 @@ async function enablePush() {
 
 		await fetch("/subscribe", {
 			method: "POST",
-			headers: { "Content-Type": "applications/json" },
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(sub),
 		});
 
 		log("push enabled");
+		const btn = document.getElementById("enablePush");
+		btn.textContent = "✓ Notifications on";
+		btn.disabled = true;
 	} catch (e) {
 		log("push error: " + e.message);
 	}
 }
 
 document.getElementById("enablePush").onclick = enablePush;
-document.getElementById("enablePush").textContent = "✓ Notifications on";
-document.getElementById("enablePush").disabled = true;
+
