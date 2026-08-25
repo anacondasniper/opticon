@@ -69,10 +69,10 @@ video {
 	padding: 2rem;
 }
 
-#loginLogo {
+#iconLogo {
 	width:72px;
 	height: 72px;
-	margin: 0 auto 0.5rem;
+	margin: 0 auto;
 	border-radius: 16px;
 	display: block;
 }
@@ -123,6 +123,7 @@ video {
 	min-height: 1.2em;
 	font-size: 0.9rem;
 	text-align: center;
+	color: var(--danger);
 }
 
 #enablePush {
