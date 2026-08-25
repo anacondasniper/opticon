@@ -39,6 +39,14 @@ body {
 	height: 100%;
 	object-fit: cover;
 	display: block;
+	pointer-events: none;
+}
+
+.camera-view #remote::-webkit-media-controls {
+	display: none !important;
+}
+.camera-view #remote::-webkit-media-controls-play-button {
+	display: none !important;
 }
 
 .view-topbar {
