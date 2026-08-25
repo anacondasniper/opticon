@@ -14,11 +14,15 @@ use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 use tokio::sync::broadcast;
-use tower_sessions::{MemoryStore, Session, SessionManagerLayer};
+use tower_sessions::{MemoryStore, Session, SessionManagerLayer, cookie::time::Error::InvalidFormatDescription};
 use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
-
+use web_push::{
+    ContentEncoding, SubscriptionInfo, VapidSignatureBuilder,
+    WebPushMessageBuilder, IsahcWebPushClient, WebPushClient,
+};
+use std::fs::File;
 
 #[derive(Clone)]
 struct AppState {
@@ -181,6 +185,9 @@ async fn ring(
     let event = format!(r#"{{"kind":"ring","doorbell_id":"{}"}}"#, body.doorbell_id);
     let _ = state.tx.send(event);
     println!("ring from {}", body.doorbell_id);
+
+    send_push_to_all(&state.db, "Opticon", "Someone's at the door 🔔").await;
+
     (StatusCode::OK, "ok").into_response()
 }
 
@@ -255,6 +262,52 @@ async fn subscribe(
         Err(e) => {
             eprintln!("subscribe error: {e}");
             (StatusCode::INTERNAL_SERVER_ERROR, "failed").into_response()
+        }
+    }
+}
+
+async fn send_push_to_all(db: &SqlitePool, title: &str, body: &str) {
+    let subs = sqlx::query_as::<_, (String, String, String)>(
+        "SELECT endpoint, p256dh, auth FROM push_subscriptions",
+    )
+    .fetch_all(db)
+    .await
+    .unwrap_or_default();
+
+    let payload = format!(r#"{{"title":"{}","body":"{}","kind":"ring"}}"#, title, body);
+
+    let client = match IsahcWebPushClient::new() {
+        Ok(c) => c,
+        Err(e) => { eprintln!("push client error: {e}"); return; }
+    };
+
+    for (endpoint, p256dh, auth) in subs {
+        let info = SubscriptionInfo::new(&endpoint, &p256dh, &auth);
+
+        let file = match File::open("vapid_private.pem") {
+            Ok(f) => f,
+            Err(e) => { eprintln!("vapid key open error: {e}"); return; }
+        };
+
+        let sig = match VapidSignatureBuilder::from_pem(file, &info) {
+            Ok(b) => match b.build() {
+                Ok(s) => s,
+                Err(e) => { eprintln!("vapid build error: {e}"); continue; }
+            },
+            Err(e) => { eprintln!("vapid pem error: {e}"); continue; }
+        };
+
+        let mut builder = WebPushMessageBuilder::new(&info);
+        builder.set_payload(ContentEncoding::Aes128Gcm, payload.as_bytes());
+        builder.set_vapid_signature(sig);
+
+        match builder.build() {
+            Ok(msg) => {
+                if let Err(e) = client.send(msg).await {
+                    eprintln!("push send error to {}: {e}", &endpoint[..30.min(endpoint.len())]);
+                }
+            }
+            Err(e) => eprintln!("push message build error: {e}"),
         }
     }
 }
