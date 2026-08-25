@@ -84,10 +84,9 @@ async fn main() {
         .layer(session_layer)
         .with_state(state);
 
-    let config = RustlsConfig::from_pem_file(
-        "10.0.0.41+2.pem", 
-        "10.0.0.41+2-key.pem",
-    ).await.unwrap();
+    let cert_path = std::env::var("TLS_CERT").expect("TLS_CERT not set");
+    let key_path = std::env::var("TLS_KEY").expect("TLS_KEY not set");
+    let config = RustlsConfig::from_pem_file(cert_path, key_path).await.unwrap();
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("Opticon listening on https://{}", addr);
