@@ -29,6 +29,7 @@ struct AppState {
     tx: broadcast::Sender<String>,
     db: SqlitePool,
 }
+use serde_json::json;
 
 #[derive(Deserialize)]
 struct LoginRequest {
@@ -76,6 +77,7 @@ async fn main() {
     let protected = Router::new()
         .route("/ws", get(ws_handler))
         .route("/subscribe", post(subscribe))
+        .route("/doorbells", get(list_doorbells))
         .route_layer(axum::middleware::from_fn(require_login));
 
     let app = Router::new()
@@ -312,4 +314,22 @@ async fn send_push_to_all(db: &SqlitePool, title: &str, body: &str) {
             Err(e) => eprintln!("push message build error: {e}"),
         }
     }
+}
+
+async fn list_doorbells(
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let rows = sqlx::query_as::<_, (String, String)>(
+        "SELECT id, name FROM doorbells ORDER BY name", 
+    )
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
+
+    let list: Vec<_> = rows
+        .into_iter()
+        .map(|(id, name)| serde_json::json!({ "id": id, "name": name }))
+        .collect();
+
+    Json(list)
 }

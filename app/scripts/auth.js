@@ -14,8 +14,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
 		if (res.ok) {
 			document.getElementById("login").style.display = "none";
-			document.getElementById("app").style.display = "block";
-			main();
+			document.getElementById("list").style.display = "block";
+			loadDoorbells();
 		} else {
 			loginError.textContent = "Invalid username or password";
 		}

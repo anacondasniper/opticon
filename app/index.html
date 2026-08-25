@@ -11,7 +11,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 </head>
 <body>
-	<div id="login" style="display:none;">
+	<div id="login" style="display:block;">
 		<img id="iconLogo" src="icons/opticon-ico180-transparent.png" alt="Opticon" />
 		<h2>opticon</h2>
 		<form id="loginForm">
@@ -21,7 +21,7 @@
 			<div id="loginError"></div>
 		</form>
 	</div>
-	<div id="list" style ="display:block;">
+	<div id="list" style ="display:none;">
 		<header class="list-header">
 			<h1>Doorbells</h1>
 		</header>
@@ -56,6 +56,7 @@
 	</div>
 
 	<script src="scripts/webrtc.js"></script>
+	<script src="scripts/list.js"></script>
 	<script src="scripts/auth.js"></script>
 	<script src="scripts/push.js"></script>
 </body>
