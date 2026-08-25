@@ -158,6 +158,13 @@ video {
 
 /* list */
 
+#list {
+	max-width: 480px;
+	margin: 0 auto;
+	padding: 1.5rem 1rem;
+	padding-top: calc(1.5rem + env(safe-area-inset-top));
+}
+
 .list-header {
 	margin-bottom: 1.5rem;
 }
@@ -167,6 +174,13 @@ video {
 	font-weight: 600;
 	letter-spacing: -0.01em;
 }
+
+.doorbell-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
 .doorbell-card {
 	width: 100%;
 	background: var(--surface);
