@@ -11,7 +11,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 </head>
 <body>
-	<div id="login" style="display:block;">
+	<div id="login" style="display:none;">
 		<img id="iconLogo" src="icons/opticon-ico180-transparent.png" alt="Opticon" />
 		<h2>opticon</h2>
 		<form id="loginForm">
@@ -45,14 +45,22 @@
 			</button>
 		</div>
 	</div>
-	<div id="app" style="display:none;">
-		<h1>Opticon Webcam Test</h1>
-		<div id="status">starting...</div>
-		<div class="videos">
-			<div><div class="label">you (local)</div><video id="local" autoplay playsinline muted></video></div>
-			<div><div class="label">other (remote)</div><video id="remote" autoplay playsinline muted></video></div>
+	<div id="app" style="display:block;">
+		<div class="camera-view">
+			<video id="remote" autoplay playsinline
+				   poster="images/example_scene.png"></video>
+			<div class="view-topbar">
+				<button id="backBtn" class="icon-btn">‹</button>
+				<span id="viewName" class="view-name">Front Door</span>
+				<span class="live-badge"><span class="live-dot"></span>LIVE</span>
+			</div>
+
+			<div class="view-bottombar">
+				<button id="pttButton">Hold to Talk</button>
+			</div>
+
+			<video id="local" autoplay playsinline muted hidden></video>
 		</div>
-		<button id="enablePush">Enable Notifications</button>
 	</div>
 
 	<script src="scripts/webrtc.js"></script>

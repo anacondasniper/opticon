@@ -1,6 +1,8 @@
 const statusEl = document.getElementById("status");
 const localVideo = document.getElementById("local");
 const remoteVideo = document.getElementById("remote");
+const ptt = document.getElementById("pttButton");
+
 const log = (m) => { statusEl.textContent = m; console.log(m); };
 
 
@@ -105,9 +107,36 @@ function setupSignaling() {
 }
 
 async function main() {
-	const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-	localVideo.srcObject = stream;
-	stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+	window.localStream = await navigator.mediaDevices.getUserMedia({
+		audio: true,
+		video: false,
+	});
+	window.localStream.getAudioTracks().forEach(t => t.enabled = false);
+	stream.getTracks().forEach((t) => pc.addTrack(t, window.localStream));
 	log("camera ready \u2014 open this page in a second tab");
 	setupSignaling();
 }
+
+document.getElementById("backBtn").addEventListener("click", () => {
+	pc.close();
+	if (window.localStream) {
+		window.localStream.getTracks().forEach(t => t.stop());
+		window.localStream = null;
+	}
+	setTalking(false);
+	document.getElementById("app").style.display = "none";
+	document.getElementById("list").style.display = "block";
+});
+
+function setTalking(on) {
+	if (window.localStream) {
+		window.localStream.getAudioTracks().forEach(t => t.enabled = on);
+	}
+	ptt.classList.toggle("talking", on);
+}
+
+ptt.addEventListener("mousedown", () => setTalking(true));
+ptt.addEventListener("mouseup",   () => setTalking(false));
+ptt.addEventListener("mouseleave",() => setTalking(false));  // dragged off while held
+ptt.addEventListener("touchstart", (e) => { e.preventDefault(); setTalking(true); });
+ptt.addEventListener("touchend",   (e) => { e.preventDefault(); setTalking(false); });
